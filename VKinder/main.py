@@ -64,3 +64,27 @@ class VkBot:
         self.age_to: int = 0
         self.sex: int = 0
         self.users_list: list = []
+
+    def get_user_name(self) -> tuple(str):
+        """Получаем имя и фамилию пользователя
+
+        Args:
+            self (self): self
+
+        Returns:
+            _type_: Имя и фамилия
+        """
+        response = requests.get(
+            "https://api.vk.com/method/users.get",
+            get_params({"user_ids": self.user_id}),
+        )
+        resp = response.json()
+        items = resp.get("response", {})
+        if not items:
+            return None
+        for user_info in items:
+            self.first_name = user_info["first_name"]
+            self.last_name = user_info["last_name"]
+        return self.first_name, self.last_name
+
+    
