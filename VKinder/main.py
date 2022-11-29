@@ -232,11 +232,11 @@ class VkBot:
                 else:
                     write_msg(self.user_id, UNKNOWN_MESSAGE)
 
-    def find_user(self) -> list[str]:
+    def find_user(self) -> list[data.FoundUser]:
         """Поиск пользователей
 
         Returns:
-            list[str]: Список пользователей
+            list[data.FoundUser]: Список пользователей
         """
         users_list = []
         response = requests.get(
@@ -266,3 +266,26 @@ class VkBot:
                 users_list.append(users_id)
         self.users_list = data.get_viewed_user(self.user.id, users_list)
         return self.users_list
+
+    def get_json(self, result: data.FoundUser) -> json:
+        """Запись результата в json
+        Args:
+            result (data.FoundUser): Json 
+        """
+        res = list()
+        for i in result:
+            photos = i.top_photos.split(",")
+            photos_list = []
+            for item in photos:
+                photos_list.append(f"https://vk.com/{item}")
+            d = {
+                "id": f"https://vk.com/id{i.vk_id}",
+                "first_name": i.first_name,
+                "last_name": i.last_name,
+                "photos": photos_list,
+            }
+            res.append(d)
+            if len(res) > 9:
+                break
+        with open("result.json", "w", encoding="utf8") as f:
+            json.dump(res, f, ensure_ascii=False, indent=2)
