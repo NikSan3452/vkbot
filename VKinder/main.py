@@ -183,3 +183,32 @@ class VkBot:
                     for city_id in items:
                         self.city = city_id["id"]
                         return self.city
+    
+
+    def get_min_age(self) -> int:
+        """Получаем минимальный возраст пользователя
+
+        Returns:
+            int: Минимальный возраст
+        """
+        write_msg(self.user_id, INPUT_MIN_AGE_MESSAGE)
+        for new_event in longpoll.listen():
+            if new_event.type == VkEventType.MESSAGE_NEW and new_event.to_me:
+                self.age_from = int(new_event.message)
+                return self.age_from
+
+
+    def get_max_age(self) -> int:
+        """Получаем максимальный возраст пользователя
+
+        Returns:
+            int: максимальный возраст
+        """
+        write_msg(self.user_id, INPUT_MAX_AGE_MESSAGE)
+        for new_event in longpoll.listen():
+            if new_event.type == VkEventType.MESSAGE_NEW and new_event.to_me:
+                self.age_to = int(new_event.message)
+                return self.age_to
+
+
+    
