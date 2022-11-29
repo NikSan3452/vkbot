@@ -2,12 +2,13 @@ import sqlalchemy as sq
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker, relationship
 
-DRIVER = "postgresql"
-USERNAME = "postgres"
-PASSWORD = "64381261"
-HOST = "localhost"
-PORT = "5432"
-DATABASE = "vkinder"
+# Введите свои данных
+DRIVER = ""
+USERNAME = ""
+PASSWORD = ""
+HOST = ""
+PORT = ""
+DATABASE = ""
 
 DATABASE_URL = f"{DRIVER}://{USERNAME}:{PASSWORD}@{HOST}:{PORT}/{DATABASE}"
 
