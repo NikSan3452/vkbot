@@ -289,3 +289,13 @@ class VkBot:
                 break
         with open("result.json", "w", encoding="utf8") as f:
             json.dump(res, f, ensure_ascii=False, indent=2)
+
+
+class FoundUser(VkBot):
+    def __init__(self, user, user_id):
+        self.vk_id = user["id"]
+        self.first_name = user["first_name"]
+        self.last_name = user["last_name"]
+        self.top_photos = self.get_top_photos(self.vk_id)
+        self.User_id = user_id
+        self.like = self.giv_info()
