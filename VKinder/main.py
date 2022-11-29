@@ -87,4 +87,24 @@ class VkBot:
             self.last_name = user_info["last_name"]
         return self.first_name, self.last_name
 
-    
+
+    def new_message(self, message: str) -> str:
+        """Отправка сообщений ботом
+
+        Args:
+            message (str): Сообщение
+
+        Returns:
+            str: Сообщение
+        """
+        # Привет
+        if message.upper() == self.commands[0]:
+            return GREETING_MESSAGE
+
+        # Старт
+        elif message.upper() == self.commands[1]:
+            return self.run()
+
+        # Неизвестное сообщение
+        else:
+            return UNKNOWN_MESSAGE
