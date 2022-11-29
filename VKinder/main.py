@@ -160,7 +160,7 @@ class VkBot:
                             .all()
                         )
                         return self.new_message("привет")
-    
+
     def get_city(self) -> Any:
         """Получаем город
 
@@ -183,7 +183,6 @@ class VkBot:
                     for city_id in items:
                         self.city = city_id["id"]
                         return self.city
-    
 
     def get_min_age(self) -> int:
         """Получаем минимальный возраст пользователя
@@ -197,7 +196,6 @@ class VkBot:
                 self.age_from = int(new_event.message)
                 return self.age_from
 
-
     def get_max_age(self) -> int:
         """Получаем максимальный возраст пользователя
 
@@ -210,5 +208,26 @@ class VkBot:
                 self.age_to = int(new_event.message)
                 return self.age_to
 
+    def get_sex(self) -> int:
+        """Получаем пол пользователя
 
-    
+        Returns:
+            int: Пол
+        """
+        write_msg(self.user_id, INPUT_SEX_MESSAGE)
+        for new_event in longpoll.listen():
+            if new_event.type == VkEventType.MESSAGE_NEW and new_event.to_me:
+                if (
+                    new_event.message.lower() == "мужской"
+                    or new_event.message.lower() == "м"
+                ):
+                    self.sex = 2
+                    return self.sex
+                elif (
+                    new_event.message.lower() == "женский"
+                    or new_event.message.lower() == "ж"
+                ):
+                    self.sex = 1
+                    return self.sex
+                else:
+                    write_msg(self.user_id, UNKNOWN_MESSAGE)
