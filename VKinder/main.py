@@ -1,7 +1,6 @@
 from typing import Any, Optional
 import requests
 import vk_api
-from data import User
 import data
 import json
 
@@ -53,7 +52,7 @@ class VkBot:
     """
 
     def __init__(self, user_id: int) -> None:
-        self.user: User = data.User
+        self.user: data.User = data.User
         self.id: int = self.user.id
         self.user_id: int = user_id
         self.commands: list[str] = ["ПРИВЕТ", "СТАРТ"]
@@ -108,3 +107,58 @@ class VkBot:
         # Неизвестное сообщение
         else:
             return UNKNOWN_MESSAGE
+
+
+    def run(self) -> Any:
+        """Основной цикл
+
+        Returns:
+            Any: Any
+        """
+        download = []
+        self.get_user_name()
+        exist = (
+            data.session.query(data.User)
+            .filter(data.User.vk_id == self.user_id)
+            .first()
+        )
+
+        if not exist:
+            self.user = data.User(
+                vk_id=self.user_id, first_name=self.first_name, last_name=self.last_name
+            )
+
+            data.add_user(self.user)
+
+        else:
+            self.user = exist
+        self.get_city()
+        self.get_min_age()
+        self.get_max_age()
+        self.get_sex()
+        self.find_user()
+        for users in self.users_list:
+            Found_User = data.FoundUser(users, self.user.id)
+            download.append(
+                data.FoundUser(
+                    vk_id=Found_User.vk_id,
+                    first_name=Found_User.first_name,
+                    last_name=Found_User.last_name,
+                    top_photos=Found_User.top_photos,
+                    User_id=Found_User.User_id,
+                    like=Found_User.like,
+                )
+            )
+            write_msg(self.user_id, CONTINUE_FIND_MESSAGE)
+            for new_event in longpoll.listen():
+                if new_event.type == VkEventType.MESSAGE_NEW and new_event.to_me:
+                    if new_event.message.lower() == "да":
+                        break
+                    if new_event.message.lower() == "нет":
+                        data.add_user_list(download)
+                        self.get_json(
+                            data.session.query(data.FoundUser)
+                            .filter(data.FoundUser.User_id == self.user.id)
+                            .all()
+                        )
+                        return self.new_message("привет")
