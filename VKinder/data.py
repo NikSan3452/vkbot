@@ -19,3 +19,20 @@ class User(Base):
     vk_id = sq.Column(sq.Integer)
     first_name = sq.Column(sq.String)
     last_name = sq.Column(sq.String)
+
+
+class FoundUser(Base):
+    """Класс описывающий найденых пользователей, которые добавлены в понравившееся
+
+    Args:
+        Base (Base): Базовый класс
+    """
+    __tablename__ = "founduser"
+    id = sq.Column(sq.Integer, primary_key=True)
+    vk_id = sq.Column(sq.Integer)
+    first_name = sq.Column(sq.String)
+    last_name = sq.Column(sq.String)
+    top_photos = sq.Column(sq.String(1000))
+    User_id = sq.Column(sq.Integer, sq.ForeignKey("user.id"))
+    like = sq.Column(sq.Boolean)
+    user = relationship(User)
