@@ -231,3 +231,38 @@ class VkBot:
                     return self.sex
                 else:
                     write_msg(self.user_id, UNKNOWN_MESSAGE)
+
+    def find_user(self) -> list[str]:
+        """Поиск пользователей
+
+        Returns:
+            list[str]: Список пользователей
+        """
+        users_list = []
+        response = requests.get(
+            "https://api.vk.com/method/users.search",
+            get_params(
+                {
+                    "count": 1000,
+                    "city": self.city,
+                    "country": 1,
+                    "sex": self.sex,
+                    "age_from": self.age_from,
+                    "age_to": self.age_to,
+                    "fields": "is_closed",
+                    "has_photo": 1,
+                }
+            ),
+        )
+        resp = response.json()
+        items = resp.get("response", {}).get("items", [])
+        if not items:
+            return None
+        for users_id in items:
+            private = users_id["is_closed"]
+            if private:
+                pass
+            else:
+                users_list.append(users_id)
+        self.users_list = data.get_viewed_user(self.user.id, users_list)
+        return self.users_list
