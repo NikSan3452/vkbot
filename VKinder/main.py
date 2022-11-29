@@ -1,6 +1,7 @@
 from typing import Any, Optional
 import requests
 import vk_api
+from data import User
 import data
 import json
 
@@ -46,3 +47,20 @@ def write_msg(user_id: int, message: str, attachment: Optional[str] = "") -> Non
             "attachment": attachment,
         },
     )
+
+class VkBot:
+    """Основной класс описывающий бота
+    """
+
+    def __init__(self, user_id: int) -> None:
+        self.user: User = data.User
+        self.id: int = self.user.id
+        self.user_id: int = user_id
+        self.commands: list[str] = ["ПРИВЕТ", "СТАРТ"]
+        self.first_name: Optional[str] = ""
+        self.last_name: Optional[str] = ""
+        self.city: str = 0
+        self.age_from: int = 0
+        self.age_to: int = 0
+        self.sex: int = 0
+        self.users_list: list = []
