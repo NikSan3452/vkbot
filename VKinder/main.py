@@ -1,42 +1,27 @@
-from typing import Any, Optional
+from vk_api.longpoll import VkLongPoll, VkEventType
+from random import randrange
+from messages import *
 import requests
 import vk_api
 import data
 import json
 
-from vk_api.longpoll import VkLongPoll, VkEventType
-from random import randrange
-from messages import *
-from config import settings
+# Введите свои учетные данные
+GROUP_TOKEN = ""
+USER_TOKEN = ""
 
-
-vk = vk_api.VkApi(token=settings.VK_GROUP_TOKEN)
+vk = vk_api.VkApi(token=GROUP_TOKEN)
 longpoll = VkLongPoll(vk)
 
 
-def get_params(add_params: Optional[dict] = None) -> dict:
-    """Получаем параметры
-
-    Args:
-        add_params (dict, optional): Параметры, по умолчанию None
-
-    Returns:
-        dict: Параметры
-    """
-    params = {"access_token": settings.VK_USER_TOKEN, "v": settings.V}
+def get_params(add_params: dict = None):
+    params = {"access_token": USER_TOKEN, "v": "5.131"}
     if add_params:
         params.update(add_params)
     return params
 
 
-def write_msg(user_id: int, message: str, attachment: Optional[str] = "") -> None:
-    """Сообщения бота
-
-    Args:
-        user_id (int): ID пользователя
-        message (str): Сообщение
-        attachment (str, optional): Вложение, по умолчанию пустая строка - "".
-    """
+def write_msg(user_id, message, attachment=""):
     vk.method(
         "messages.send",
         {
@@ -49,30 +34,24 @@ def write_msg(user_id: int, message: str, attachment: Optional[str] = "") -> Non
 
 
 class VkBot:
-    """Основной класс описывающий бота"""
 
-    def __init__(self, user_id: int) -> None:
-        self.user: data.User = data.User
-        self.id: int = self.user.id
-        self.user_id: int = user_id
-        self.commands: list[str] = ["ПРИВЕТ", "СТАРТ"]
-        self.first_name: Optional[str] = ""
-        self.last_name: Optional[str] = ""
-        self.city: str = 0
-        self.age_from: int = 0
-        self.age_to: int = 0
-        self.sex: int = 0
-        self.users_list: list = []
+    # Инициализация бота
 
-    def get_user_name(self) -> tuple(str):
-        """Получаем имя и фамилию пользователя
+    def __init__(self, user_id):
+        self.user = data.User
+        self.id = self.user.id
+        self.user_id = user_id
+        self.commands = ["ПРИВЕТ", "СТАРТ"]
+        self.first_name = ""
+        self.last_name = ""
+        self.city = 0
+        self.age_from = 0
+        self.age_to = 0
+        self.sex = 0
+        self.users_list = []
 
-        Args:
-            self (self): self
-
-        Returns:
-            _type_: Имя и фамилия
-        """
+    # Получаем имя, фамилию пользователя
+    def get_user_name(self):
         response = requests.get(
             "https://api.vk.com/method/users.get",
             get_params({"user_ids": self.user_id}),
@@ -86,15 +65,8 @@ class VkBot:
             self.last_name = user_info["last_name"]
         return self.first_name, self.last_name
 
-    def new_message(self, message: str) -> str:
-        """Отправка сообщений ботом
-
-        Args:
-            message (str): Сообщение
-
-        Returns:
-            str: Сообщение
-        """
+    # Отправка сообщений ботом
+    def new_message(self, message):
         # Привет
         if message.upper() == self.commands[0]:
             return GREETING_MESSAGE
@@ -107,12 +79,8 @@ class VkBot:
         else:
             return UNKNOWN_MESSAGE
 
-    def run(self) -> Any:
-        """Основной цикл
-
-        Returns:
-            Any: Any
-        """
+    # Основной цикл
+    def run(self):
         download = []
         self.get_user_name()
         exist = (
@@ -136,7 +104,7 @@ class VkBot:
         self.get_sex()
         self.find_user()
         for users in self.users_list:
-            Found_User = data.FoundUser(users, self.user.id)
+            Found_User = FoundUser(users, self.user.id)
             download.append(
                 data.FoundUser(
                     vk_id=Found_User.vk_id,
@@ -161,12 +129,8 @@ class VkBot:
                         )
                         return self.new_message("привет")
 
-    def get_city(self) -> Any:
-        """Получаем город
-
-        Returns:
-            Any: Город
-        """
+    # город
+    def get_city(self):
         write_msg(self.user_id, INPUT_TOWN_MESSAGE)
         for new_event in longpoll.listen():
             if new_event.type == VkEventType.MESSAGE_NEW and new_event.to_me:
@@ -184,36 +148,25 @@ class VkBot:
                         self.city = city_id["id"]
                         return self.city
 
-    def get_min_age(self) -> int:
-        """Получаем минимальный возраст пользователя
-
-        Returns:
-            int: Минимальный возраст
-        """
+    
+    # минимальный возраст
+    def get_min_age(self):
         write_msg(self.user_id, INPUT_MIN_AGE_MESSAGE)
         for new_event in longpoll.listen():
             if new_event.type == VkEventType.MESSAGE_NEW and new_event.to_me:
                 self.age_from = int(new_event.message)
                 return self.age_from
 
-    def get_max_age(self) -> int:
-        """Получаем максимальный возраст пользователя
-
-        Returns:
-            int: максимальный возраст
-        """
+    # максимальный возраст
+    def get_max_age(self):
         write_msg(self.user_id, INPUT_MAX_AGE_MESSAGE)
         for new_event in longpoll.listen():
             if new_event.type == VkEventType.MESSAGE_NEW and new_event.to_me:
                 self.age_to = int(new_event.message)
                 return self.age_to
 
-    def get_sex(self) -> int:
-        """Получаем пол пользователя
-
-        Returns:
-            int: Пол
-        """
+    # Пол
+    def get_sex(self):
         write_msg(self.user_id, INPUT_SEX_MESSAGE)
         for new_event in longpoll.listen():
             if new_event.type == VkEventType.MESSAGE_NEW and new_event.to_me:
@@ -232,12 +185,8 @@ class VkBot:
                 else:
                     write_msg(self.user_id, UNKNOWN_MESSAGE)
 
-    def find_user(self) -> list[data.FoundUser]:
-        """Поиск пользователей
-
-        Returns:
-            list[data.FoundUser]: Список пользователей
-        """
+    # Поиск
+    def find_user(self):
         users_list = []
         response = requests.get(
             "https://api.vk.com/method/users.search",
@@ -267,11 +216,7 @@ class VkBot:
         self.users_list = data.get_viewed_user(self.user.id, users_list)
         return self.users_list
 
-    def get_json(self, result: data.FoundUser) -> json:
-        """Запись результата в json
-        Args:
-            result (data.FoundUser): Json 
-        """
+    def get_json(self, result):
         res = list()
         for i in result:
             photos = i.top_photos.split(",")
@@ -299,3 +244,50 @@ class FoundUser(VkBot):
         self.top_photos = self.get_top_photos(self.vk_id)
         self.User_id = user_id
         self.like = self.giv_info()
+
+    def get_top_photos(self, id):
+        photos = []
+        response = requests.get(
+            "https://api.vk.com/method/photos.get",
+            get_params(
+                {"owner_id": id, "album_id": "profile", "extended": 1, "count": 1000}
+            ),
+        )
+        resp = response.json()
+        items = resp.get("response", {}).get("items", [])
+        if not items:
+            return None
+        sorted_response = sorted(items, key=lambda x: x["likes"]["count"], reverse=True)
+        for photo_id in sorted_response:
+            photos.append(f"""photo{id}_{photo_id['id']}""")
+        top_photos = ",".join(photos[:3])
+
+        return top_photos
+
+    def giv_info(self):
+        write_msg(
+            event.user_id,
+            f"Имя: {self.first_name }\n"
+            f"Фамилия: {self.last_name}\nСсылка: @id{self.vk_id}",
+            self.top_photos,
+        )
+
+        write_msg(event.user_id, DO_YOU_LIKE_IT_MESSAGE)
+        for new_event in longpoll.listen():
+            if new_event.type == VkEventType.MESSAGE_NEW and new_event.to_me:
+                if new_event.message.lower() == "да":
+                    return 1
+
+                if new_event.message.lower() == "нет":
+                    return 0
+                else:
+                    write_msg(event.user_id, UNKNOWN_MESSAGE)
+
+
+# запуск
+if __name__ == "__main__":
+    data.create_tables()
+    for event in longpoll.listen():
+        if event.type == VkEventType.MESSAGE_NEW and event.to_me:
+            bot = VkBot(event.user_id)
+            write_msg(event.user_id, bot.new_message(event.text))
