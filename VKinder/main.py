@@ -47,9 +47,9 @@ def write_msg(user_id: int, message: str, attachment: Optional[str] = "") -> Non
         },
     )
 
+
 class VkBot:
-    """Основной класс описывающий бота
-    """
+    """Основной класс описывающий бота"""
 
     def __init__(self, user_id: int) -> None:
         self.user: data.User = data.User
@@ -86,7 +86,6 @@ class VkBot:
             self.last_name = user_info["last_name"]
         return self.first_name, self.last_name
 
-
     def new_message(self, message: str) -> str:
         """Отправка сообщений ботом
 
@@ -107,7 +106,6 @@ class VkBot:
         # Неизвестное сообщение
         else:
             return UNKNOWN_MESSAGE
-
 
     def run(self) -> Any:
         """Основной цикл
@@ -162,3 +160,26 @@ class VkBot:
                             .all()
                         )
                         return self.new_message("привет")
+    
+    def get_city(self) -> Any:
+        """Получаем город
+
+        Returns:
+            Any: Город
+        """
+        write_msg(self.user_id, INPUT_TOWN_MESSAGE)
+        for new_event in longpoll.listen():
+            if new_event.type == VkEventType.MESSAGE_NEW and new_event.to_me:
+                response = requests.get(
+                    "https://api.vk.com/method/database.getCities",
+                    get_params({"country_id": 1, "count": 1, "q": new_event.message}),
+                )
+                resp = response.json()
+                items = resp.get("response", {}).get("items", [])
+                if not items:
+                    write_msg(self.user_id, UNKNOWN_TOWN_MESSAGE)
+                    return self.get_city()
+                else:
+                    for city_id in items:
+                        self.city = city_id["id"]
+                        return self.city
