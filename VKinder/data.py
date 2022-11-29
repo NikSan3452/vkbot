@@ -1,3 +1,4 @@
+from typing import Any
 import sqlalchemy as sq
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker, relationship
@@ -36,3 +37,42 @@ class FoundUser(Base):
     User_id = sq.Column(sq.Integer, sq.ForeignKey("user.id"))
     like = sq.Column(sq.Boolean)
     user = relationship(User)
+
+
+def create_tables() -> None:
+    """Создает таблицы
+    """
+    Base.metadata.create_all(engine)
+
+def add_user(user: User) -> None: 
+    """Добавляет новых пользователей
+
+    Args:
+        user (User): Пользователь
+    """
+    session.expire_on_commit = False
+    session.add(user)
+    session.commit()
+
+
+def add_user_list(user: User) -> None:
+    """Добавляет список пользователей
+
+    Args:
+        user (User): Список пользователей
+    """
+    session.expire_on_commit = False
+    session.add_all(user)
+    session.commit()
+
+
+def get_viewed_user(user_id: Any, users_list: list[FoundUser]) -> FoundUser:
+    list = session.query(FoundUser).filter(FoundUser.User_id == user_id).all()
+    users = set()
+    found_users = []
+    for item in list:
+        users.add(item.vk_id)
+    for item in users_list:
+        if item["id"] not in users:
+            found_users.append(item)
+    return found_users
