@@ -6,7 +6,7 @@ load_dotenv()
 class Settings:
     V = '5.131'
     VK_GROUP_TOKEN = os.getenv('VK_GROUP_TOKEN')
-    VK_TOKEN = os.getenv('VK_TOKEN')
+    VK_USER_TOKEN = os.getenv('VK_TOKEN')
     OWNER = os.getenv("OWNER") 
 
     DRIVER = "postgresql"
