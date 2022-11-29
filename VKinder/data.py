@@ -1,4 +1,3 @@
-from typing import Any
 import sqlalchemy as sq
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker, relationship
@@ -66,7 +65,7 @@ def add_user_list(user: User) -> None:
     session.commit()
 
 
-def get_viewed_user(user_id: Any, users_list: list[FoundUser]) -> FoundUser:
+def get_viewed_user(user_id: int, users_list: list[FoundUser]) -> FoundUser:
     list = session.query(FoundUser).filter(FoundUser.User_id == user_id).all()
     users = set()
     found_users = []
