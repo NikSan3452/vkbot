@@ -10,6 +10,8 @@ HOST = ""
 PORT = ""
 DATABASE = ""
 
+
+
 DATABASE_URL = f"{DRIVER}://{USERNAME}:{PASSWORD}@{HOST}:{PORT}/{DATABASE}"
 
 Base = declarative_base()
