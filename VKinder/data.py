@@ -1,19 +1,11 @@
 import sqlalchemy as sq
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker, relationship
+from config import Settings
 
-# Введите свои данных
-DRIVER = ""
-USERNAME = ""
-PASSWORD = ""
-HOST = ""
-PORT = ""
-DATABASE = ""
-
-DATABASE_URL = f"{DRIVER}://{USERNAME}:{PASSWORD}@{HOST}:{PORT}/{DATABASE}"
 
 Base = declarative_base()
-engine = sq.create_engine(DATABASE_URL)
+engine = sq.create_engine(Settings.DATABASE_URL)
 Session = sessionmaker(bind=engine)
 session = Session()
 
@@ -39,22 +31,42 @@ class FoundUser(Base):
 
 
 def create_tables():
+    """Создает таблицы"""
     Base.metadata.create_all(engine)
 
 
-def add_user(user):
+def add_user(user: User) -> None:
+    """Добавляет пользователя в БД
+
+    Args:
+        user (User): Пользователь
+    """
     session.expire_on_commit = False
     session.add(user)
     session.commit()
 
 
-def add_user_list(user):
+def add_user_list(user: User) -> None:
+    """Добаляет данные пользователя в БД
+
+    Args:
+        user (User): Список пользователей
+    """
     session.expire_on_commit = False
     session.add_all(user)
     session.commit()
 
 
-def get_viewed_user(user_id, users_list):
+def get_viewed_user(user_id: str, users_list: list) -> list:
+    """Получаем список пользователей из БД
+
+    Args:
+        user_id (str): ID Пользователя
+        users_list (list): Список пользователей
+
+    Returns:
+        _type_: Список пользователей
+    """
     list = session.query(FoundUser).filter(FoundUser.User_id == user_id).all()
     users = set()
     found_users = []
